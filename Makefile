@@ -8,8 +8,10 @@ testplot.abs: testplot.bin
 testplot.bin: testplot.o 
 	pdp11-aout-objcopy -O binary $^ $@
 
-testplot.o: plot.c crt0.s
-	pdp11-aout-gcc -Os -m10  -Ttext 100 -msoft-float  -nostartfiles  -nodefaultlibs  -nostdlib   $^  -o testplot.o
+# to get the rigt order in the binary crt0.s has to be the first file
+
+testplot.o: crt0.s plot.c 
+	pdp11-aout-gcc -Os -m10  -Ttext 80 -msoft-float  -nostartfiles  -nodefaultlibs  -nostdlib   $^  -o testplot.o
 
 clean:
 	@rm -f testplot.bin testplot.o testplot.abs

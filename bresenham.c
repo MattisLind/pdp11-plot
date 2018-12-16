@@ -1,4 +1,6 @@
-
+#ifdef UNIX
+#include <stdio.h>
+#endif
 
 #define PENRIGHT 1<<0
 #define PENLEFT 1<<1
@@ -6,23 +8,15 @@
 #define DRUMDOWN 1<<3
 #define PENUP 1<<4
 #define PENDOWN 1<<5
-#define PLOTTER_CS 0172554
-#define PLOTTER_DB 0172556
 int current_x, current_y;
 
+void plotCommand(int); 
 
 int abs (int in)
 {
   return in<0?-in:in;
 }
 
-void plotCommand(int command) 
-{
-  while ( * ((volatile int *) (PLOTTER_CS)) != 0x80) {
-    //wait
-  }
-  *( (volatile int *) (PLOTTER_DB)) = command;
-}
 
 void penDown ()
 {
@@ -40,7 +34,9 @@ void moveTo(int x,int y)
   int dy = abs (y-current_y), sy = (current_y < y)?1:-1;
   int err = (dx > dy ? dx : - dy)>>1, e2;
   int command;
-
+  #ifdef UNIX
+  fprintf(stderr, "move to %d, %d\n", x,y);
+  #endif 
   while(1) {
     if (current_x == x && current_y == y) {
       break;
@@ -61,18 +57,3 @@ void moveTo(int x,int y)
   }
 } 
 
-
-int main ()
-{
-  int t=0, lastt=0, sign=1,i;
-  penDown();
-  for (i=100;i>=0;i-=2) {
-    t += sign?-sign:sign; 
-    sign ^= sign;
-    moveTo(t, lastt);
-    lastt=t;
-    moveTo(t, lastt);
-  }
-  penUp();
-  return 0;
-}

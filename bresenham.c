@@ -6,8 +6,8 @@
 #define PENLEFT 1<<1
 #define DRUMUP 1<<2
 #define DRUMDOWN 1<<3
-#define PENUP 1<<4
-#define PENDOWN 1<<5
+#define PENUP 1<<5
+#define PENDOWN 1<<4
 int current_x, current_y;
 
 void plotCommand(int); 

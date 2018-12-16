@@ -3,10 +3,13 @@
 void penUp();
 void penDown();
 void moveTo(int, int);
+void enablePlotterInterrupt();
+void disablePlotterInterrupt();
 
 
 int main ()
 {
+  disablePlotterInterrupt();
   int t=0, lastt=0, sign=0,i;
   penDown();
   for (i=100;i>=0;i-=2) {

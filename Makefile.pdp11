@@ -7,27 +7,27 @@ AS=pdp11-aout-as
 
 
 %.o:%.c
-	$(CC) -c -Os -m10 -msoft-float -nostartfiles  -nodefaultlibs  -nostdlib -o $@ $^
+	@$(CC) -c -Os -m10 -msoft-float -nostartfiles  -nodefaultlibs  -nostdlib -o $@ $^
 
 %.o:%.s
-	$(AS) -o $@ $^
+	@$(AS) -o $@ $^
 
 testplot.abs: testplot.textabs testplot.dataabs
 	@cat $^ > $@
 
 testplot.textabs: testplot.text
-	@CODE=`pdp11-aout-objdump  -t testplot.o | cut -d ' ' -f 1,13 | grep code | cut -d ' ' -f 1`; \
+	@CODE=`pdp11-aout-objdump  -t testplot.o | cut -d ' ' -f 1,13 | cut -c 1-13 | grep code | cut -d ' ' -f 1`; \
 	bin2abs $^ 0x$$CODE 0 > $@
 
 testplot.dataabs: testplot.data
-	@DATA=`pdp11-aout-objdump  -t testplot.o | cut -d ' ' -f 1,13 | grep data | cut -d ' ' -f 1`; \
+	@DATA=`pdp11-aout-objdump  -t testplot.o | cut -d ' ' -f 1,13 | cut -c 1-13 | grep data | cut -d ' ' -f 1`; \
 	bin2abs $^ 0x$$DATA 1 > $@
 
 testplot.text: testplot.o 
 	@pdp11-aout-objcopy -j .text -O binary $^ $@
 
 testplot.data: testplot.o 
-	pdp11-aout-objcopy -j .data -O binary $^ $@
+	@pdp11-aout-objcopy -j .data -O binary $^ $@
 
 # to get the rigt order in the binary crt0.s has to be the first file
 

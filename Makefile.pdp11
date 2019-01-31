@@ -3,7 +3,25 @@ OUTPUTS=Bump.pt CheshireCat.pt DeathStar.pt Dragon.pt Grinch.pt LaserGun.pt Mick
 
 ALL_ABS=$(patsubst %.pt,%-plot.abs,$(OUTPUTS))
 
+ALL_MAIN_DATA=$(patsubst %.pt,%-main.data.bin,$(OUTPUTS))
+
+ALL_PLOT_DATA=$(patsubst %.pt,%-plot.data.bin,$(OUTPUTS))
+
+ALL_MAIN_DATA_HEX=$(patsubst %.pt,%-main.data.hex,$(OUTPUTS))
+
+ALL_PLOT_DATA_HEX=$(patsubst %.pt,%-plot.data.hex,$(OUTPUTS))
+
+ALL_PLOT_DATA_DIFF=$(patsubst %.pt,%-data.diff,$(OUTPUTS))
+
 all: $(OUTPUTS)
+
+datasection: $(ALL_MAIN_DATA)  $(ALL_PLOT_DATA)
+
+# There is a bug in the linker that inserts random NULL bytes in the .data section. The diffdatasection target is meant to find those problems.
+# It appears that if the linker-script is set to have an alignment of 2 bytes this doesn't appear but when using 0100 bytes alignemnt it does appear. 
+# A bug towards GNU ld is reported.
+
+diffdatasection: $(ALL_PLOT_DATA_DIFF)
 
 abs: $(ALL_ABS)
 
@@ -77,6 +95,20 @@ Nurd.h: TekFastGraphicsFiles/File15.bin tekfast2c
 	@pdp11-aout-objcopy -j .data -O binary $^ $@
 
 
+%-plot.data.bin: %-plot.out
+		 pdp11-aout-objcopy -j .data -O binary $^ $@
+
+%-main.data.bin: %-main.o
+		 pdp11-aout-objcopy -j .data -O binary $^ $@
+
+%-plot.data.hex: %-plot.data.bin
+		 hexdump $^ > $@
+
+%-main.data.hex: %-main.data.bin
+		 hexdump $^ > $@
+
+%-data.diff: %-plot.data.hex %-main.data.hex
+	     diff $^ > $@
 
 %-plot.textabs: %-plot.text %-plot.out
 	@CODE=`pdp11-aout-objdump  -t $(word 2,$^) | cut -d ' ' -f 1,13 | cut -c 1-13 | grep code | cut -d ' ' -f 1`; \
@@ -102,3 +134,5 @@ clean:
 	@rm -f $(GEN_TEK_HDR)
 	@rm -f tekfast2c
 	@rm -f $(ALL_ABS)
+	@rm -f $(ALL_MAIN_DATA)  $(ALL_PLOT_DATA)
+	@rm -f $(ALL_MAIN_DATA_HEX) $(ALL_PLOT_DATA_HEX) $(ALL_PLOT_DATA_DIFF)

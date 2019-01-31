@@ -1,43 +1,104 @@
 
+OUTPUTS=Bump.pt CheshireCat.pt DeathStar.pt Dragon.pt Grinch.pt LaserGun.pt MickeyMouse.pt Nurd.pt R2D2.pt Snoopy.pt TekBug.pt Wizzard.pt
 
-all: testplot.abs
+ALL_ABS=$(patsubst %.pt,%-plot.abs,$(OUTPUTS))
+
+all: $(OUTPUTS)
+
+abs: $(ALL_ABS)
 
 CC=pdp11-aout-gcc
 AS=pdp11-aout-as
 
 
+space:
+	@dd if=/dev/zero of=$@ bs=1 count=20
+
+
 %.o:%.c
 	@$(CC) -c -Os -m10 -msoft-float -nostartfiles  -nodefaultlibs  -nostdlib -o $@ $^
+
 
 %.o:%.s
 	@$(AS) -o $@ $^
 
-testplot.abs: testplot.textabs testplot.dataabs
-	@cat $^ > $@
+tekfast2c: TekFastGraphicsFiles/tekfast2c.c
+	@cc -o $@ $<
 
-testplot.textabs: testplot.text
-	@CODE=`pdp11-aout-objdump  -t testplot.o | cut -d ' ' -f 1,13 | cut -c 1-13 | grep code | cut -d ' ' -f 1`; \
-	bin2abs $^ 0x$$CODE 0 > $@
+GEN_TEK_HDR=TekBug.h R2D2.h DarthVader.h  DeathStar.h LaserGun.h Grinch.h CheshireCat.h MickeyMouse.h Wizzard.h Snoopy.h Dragon.h Bump.h Nurd.h
 
-testplot.dataabs: testplot.data
-	@DATA=`pdp11-aout-objdump  -t testplot.o | cut -d ' ' -f 1,13 | cut -c 1-13 | grep data | cut -d ' ' -f 1`; \
-	bin2abs $^ 0x$$DATA 1 > $@
+TekBug.h: TekFastGraphicsFiles/File03.bin tekfast2c
+	@./tekfast2c < $< > $@
+R2D2.h: TekFastGraphicsFiles/File04.bin tekfast2c
+	@./tekfast2c < $< > $@
+DarthVader.h: TekFastGraphicsFiles/File05.bin tekfast2c
+	@./tekfast2c < $< > $@
+DeathStar.h: TekFastGraphicsFiles/File06.bin tekfast2c
+	@./tekfast2c < $< > $@
+LaserGun.h: TekFastGraphicsFiles/File07.bin tekfast2c
+	@./tekfast2c < $< > $@
+Grinch.h: TekFastGraphicsFiles/File08.bin tekfast2c
+	@./tekfast2c < $< > $@
+CheshireCat.h: TekFastGraphicsFiles/File09.bin tekfast2c
+	@./tekfast2c < $< > $@
+MickeyMouse.h: TekFastGraphicsFiles/File10.bin tekfast2c
+	@./tekfast2c < $< > $@
+Wizzard.h: TekFastGraphicsFiles/File11.bin tekfast2c
+	@./tekfast2c < $< > $@
+Snoopy.h: TekFastGraphicsFiles/File12.bin tekfast2c
+	@./tekfast2c < $< > $@
+Dragon.h: TekFastGraphicsFiles/File13.bin tekfast2c
+	@./tekfast2c < $< > $@
+Bump.h: TekFastGraphicsFiles/File14.bin tekfast2c
+	@./tekfast2c < $< > $@
+Nurd.h: TekFastGraphicsFiles/File15.bin tekfast2c
+	@./tekfast2c < $< > $@
 
-testplot.text: testplot.o 
-	@pdp11-aout-objcopy -j .text -O binary $^ $@
-
-testplot.data: testplot.o 
-	@pdp11-aout-objcopy -j .data -O binary $^ $@
-
-# to get the rigt order in the binary crt0.s has to be the first file
+%.leader:
+	@echo "WWW.DATORMUSEUM.SE PLOTTER PROGRAM $(patsubst %.leader,%,$@)" > tmp
+	@papertape < tmp > $@
+	@rm -f tmp 
 
 
-testplot.o: crt0.o main.o bresenham.o pdp-xy11.o 
+
+%-main.o: main.c %.h
+	@$(CC) -c -Os -m10 -msoft-float -nostartfiles  -nodefaultlibs  -nostdlib -o $@ $< -DPLOTFILE_H='"$(word 2, $^)"'	
+
+
+%-plot.out: crt0.o  bresenham.o pdp-xy11.o %-main.o 
 	@pdp11-aout-ld   -T linker-script   -nostartfiles  -nodefaultlibs  -nostdlib  $^  -o $@
 
 
 
+%-plot.text: %-plot.out 
+	@pdp11-aout-objcopy -j .text -O binary $^ $@
 
+%-plot.data: %-plot.out 
+	@pdp11-aout-objcopy -j .data -O binary $^ $@
+
+
+
+%-plot.textabs: %-plot.text %-plot.out
+	@CODE=`pdp11-aout-objdump  -t $(word 2,$^) | cut -d ' ' -f 1,13 | cut -c 1-13 | grep code | cut -d ' ' -f 1`; \
+	bin2abs $< 0x$$CODE 0 > $@
+
+%-plot.dataabs: %-plot.data %-plot.out
+	@DATA=`pdp11-aout-objdump  -t $(word 2,$^) | cut -d ' ' -f 1,13 | cut -c 1-13 | grep data | cut -d ' ' -f 1`; \
+	bin2abs $< 0x$$DATA 1 > $@
+
+
+%-plot.abs: %-plot.textabs %-plot.dataabs
+	    	@cat $^ > $@
+
+
+%.pt:   space %.leader DEC-11-L2PC-PO.ptap %-plot.abs
+	@cat  $(foreach file,$(filter-out space, $^),$< $(file)) $< > $@
+ 
+
+#.PHONY: clean
 
 clean:
-	@rm -f testplot.bin testplot.o testplot.abs testplot.dataabs testplot.textabs testplot.text testplot.data crt0.o main.o bresenham.o pdp-xy11.o
+	@rm -f *.pt space
+	@rm -f $(GEN_TEK_HDR)
+	@rm -f tekfast2c
+	@rm -f $(ALL_ABS)

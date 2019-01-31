@@ -6,19 +6,19 @@ SECTIONS
     code = .;
     *(.text)
     *(.rodata)
-    . = ALIGN(0100);
+    . = ALIGN(2);
   }
   .data : AT(phys + (data - code))
   {
     data = .;
     *(.data)
-    . = ALIGN(0100);
+    . = ALIGN(2);
   }
   .bss : AT(phys + (bss - code))
   {
     bss = .;
     *(.bss)
-    . = ALIGN(0100);
+    . = ALIGN(2);
   }
   end = .;
 }

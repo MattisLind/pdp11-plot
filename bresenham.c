@@ -1,15 +1,22 @@
 #ifdef UNIX
 #include <stdio.h>
+#else 
+#include "printf.h"
 #endif
 
-#define PENRIGHT 1<<0
-#define PENLEFT 1<<1
-#define DRUMUP 1<<2
-#define DRUMDOWN 1<<3
-#define PENUP 1<<5
-#define PENDOWN 1<<4
-int current_x=0, current_y=0;
+#define DRUMDOWN 1<<0
+#define DRUMUP   1<<1
+#define PENLEFT  1<<2
+#define PENRIGHT 1<<3
+#define PENUP    1<<5
+#define PENDOWN  1<<4
+int current_x, current_y;
 
+void zero () {
+  current_x = 0;
+  current_y = 0;
+}
+ 
 void plotCommand(int); 
 
 int abs (int in)
@@ -17,6 +24,23 @@ int abs (int in)
   return in<0?-in:in;
 }
 
+void penLeft() 
+{
+  plotCommand(PENLEFT);
+}
+
+void penRight() 
+{
+  plotCommand(PENRIGHT);
+}
+void drumDown() 
+{
+  plotCommand(DRUMDOWN);
+}
+void drumUp() 
+{
+  plotCommand(DRUMUP);
+}
 
 void penDown ()
 {
@@ -28,6 +52,26 @@ void penUp ()
   plotCommand(PENUP);
 }
 
+void drumUpPenLeft () 
+{ 
+  plotCommand(PENLEFT | DRUMUP);
+} 
+
+void drumDownPenLeft () 
+{ 
+  plotCommand(PENLEFT | DRUMDOWN);
+} 
+
+void drumUpPenRight () 
+{ 
+  plotCommand(PENRIGHT | DRUMUP);
+} 
+
+void drumDownPenRight () 
+{ 
+  plotCommand(PENRIGHT | DRUMDOWN);
+} 
+
 void moveTo(int x,int y)
 {
   int dx = abs (x-current_x), sx = (current_x < x)?1:-1;
@@ -35,8 +79,10 @@ void moveTo(int x,int y)
   int err = (dx > dy ? dx : - dy)>>1, e2;
   int command;
   #ifdef UNIX
-  fprintf(stderr, "move to %d, %d\n", x,y);
-  #endif 
+  fprintf(stdout, "move to %d, %d\n", x,y);
+  #else
+  //printf("Move to (%d,%d)\r\n",x,y);
+  #endif
   while(1) {
     if (current_x == x && current_y == y) {
       break;
@@ -51,7 +97,7 @@ void moveTo(int x,int y)
     if (e2<dy) {
       err += dx;
       current_y += sy;
-      command |= (sy==1)?DRUMUP:DRUMDOWN;
+      command |= (sy==1)?DRUMDOWN:DRUMUP;
     }
     plotCommand(command);
   }

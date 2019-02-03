@@ -1,10 +1,10 @@
 #include <stdio.h>
 #define DRUMDOWN 1<<0
-#define PENRIGHT 1<<1
-#define DRUMUP 1<<2
-#define PENLEFT  1<<3
-#define PENUP 1<<5
-#define PENDOWN 1<<4
+#define DRUMUP   1<<1
+#define PENLEFT  1<<2
+#define PENRIGHT 1<<3
+#define PENUP    1<<5
+#define PENDOWN  1<<4
 
 void enablePlotterInterrupt() {
 }

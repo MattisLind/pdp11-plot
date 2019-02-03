@@ -79,17 +79,21 @@ void moveTo(int x,int y)
   int err = (dx > dy ? dx : - dy)>>1, e2;
   int command;
   #ifdef UNIX
-  fprintf(stdout, "move to %d, %d\n", x,y);
+  fprintf(stdout, "move to %d, %d current_x: %d current_y %d dx: %d dy %d sx: %d sy: %d err: %d e2: %d\n", x,y, current_x, current_y, dx, dy, sx, sy, err, e2);
   #else
   //printf("Move to (%d,%d)\r\n",x,y);
   #endif
   while(1) {
+  #ifdef UNIX
+    fprintf(stdout, "while current_x: %d current_y %d dx: %d dy %d sx: %d sy: %d err: %d e2: %d\n",current_x, current_y, dx, dy, sx, sy, err, e2);
+  #endif
+
     if (current_x == x && current_y == y) {
       break;
     } 
     e2 = err;
     command = 0;
-    if (e2>-dx) {
+    if (e2>=-dx) {
       err -=dy;
       current_x += sx;
       command |= (sx==1)?PENRIGHT:PENLEFT;

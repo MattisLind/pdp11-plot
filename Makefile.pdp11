@@ -23,6 +23,10 @@ datasection: $(ALL_MAIN_DATA)  $(ALL_PLOT_DATA)
 
 diffdatasection: $(ALL_PLOT_DATA_DIFF)
 
+GEN_TEK_HDR=TekBug.h R2D2.h DarthVader.h  DeathStar.h LaserGun.h Grinch.h CheshireCat.h MickeyMouse.h Wizzard.h Snoopy.h Dragon.h Bump.h Nurd.h
+
+makeheaders: $(GEN_TEK_HDR)
+
 abs: $(ALL_ABS)
 
 CC=pdp11-aout-gcc
@@ -43,7 +47,7 @@ space:
 tekfast2c: TekFastGraphicsFiles/tekfast2c.c
 	@cc -o $@ $<
 
-GEN_TEK_HDR=TekBug.h R2D2.h DarthVader.h  DeathStar.h LaserGun.h Grinch.h CheshireCat.h MickeyMouse.h Wizzard.h Snoopy.h Dragon.h Bump.h Nurd.h
+
 
 TekBug.h: TekFastGraphicsFiles/File03.bin tekfast2c
 	@./tekfast2c < $< > $@

@@ -1,6 +1,14 @@
 
 OUTPUTS=Bump.pt CheshireCat.pt DeathStar.pt Dragon.pt Grinch.pt LaserGun.pt MickeyMouse.pt Nurd.pt R2D2.pt Snoopy.pt TekBug.pt Wizzard.pt
 
+HERSHEY_FILES=Cyrillic_Complex.hmp Greek_Complex.hmp Italic_Complex.hmp Roman_Complex.hmp Roman_Simplex.hmp Gothic_English_Triplex.hmp Greek_Complex_Small.hmp \
+              Italic_Complex_Small.hmp Roman_Complex_Small.hmp Roman_Triplex.hmp Gothic_German_Triplex.hmp Greek_Plain.hmp Italic_Triplex.hmp Roman_Duplex.hmp \
+              Script_Complex.hmp Gothic_Italian_Triplex.hmp Greek_Simplex.hmp Roman_Plain.hmp Script_Simplex.hmp
+
+HERSHEY_OUTPUTS=$(patsubst %.hmp, %.pt, $(HERSHEY_FILES))
+
+HERSHEY_HEADERS=$(patsubst %.hmp, hershey/%.h, $(HERSHEY_FILES))
+
 ALL_ABS=$(patsubst %.pt,%-plot.abs,$(OUTPUTS))
 
 ALL_MAIN_DATA=$(patsubst %.pt,%-main.data.bin,$(OUTPUTS))
@@ -26,6 +34,15 @@ diffdatasection: $(ALL_PLOT_DATA_DIFF)
 GEN_TEK_HDR=TekBug.h R2D2.h DarthVader.h  DeathStar.h LaserGun.h Grinch.h CheshireCat.h MickeyMouse.h Wizzard.h Snoopy.h Dragon.h Bump.h Nurd.h
 
 makeheaders: $(GEN_TEK_HDR)
+
+makehersheyheaders: $(HERSHEY_HEADERS)
+
+hershey/hershey2c: hershey/hershey2c.c
+		   @cc -o $@ $<
+
+
+hershey/%.h: hershey/%.hmp hershey/hershey2c hershey/hershey	     
+	     @hershey/hershey2c $< hershey/hershey > $@
 
 abs: $(ALL_ABS)
 

@@ -110,10 +110,8 @@ Nurd.h: TekFastGraphicsFiles/File15.bin tekfast2c
 %-plot.out: crt0.o  bresenham.o pdp-xy11.o %-main.o 
 	@pdp11-aout-ld   -T linker-script   -nostartfiles  -nodefaultlibs  -nostdlib  $^  -o $@
 
-%-Hershey.out: crt0.o  bresenham.o pdp-xy11.o %-Hershey-main.o 
+%-Hershey.out: crt0.o  bresenham.o pdp-xy11.o %-Hershey-main.o ashlhi3.o divmulmod.o xorhi3.o printf.o
 	@pdp11-aout-ld   -T linker-script   -nostartfiles  -nodefaultlibs  -nostdlib  $^  -o $@
-
-
 
 %-plot.text: %-plot.out 
 	@pdp11-aout-objcopy -j .text -O binary $^ $@

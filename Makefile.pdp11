@@ -5,7 +5,7 @@ HERSHEY_FILES=Cyrillic_Complex.hmp Greek_Complex.hmp Italic_Complex.hmp Roman_Co
               Italic_Complex_Small.hmp Roman_Complex_Small.hmp Roman_Triplex.hmp Gothic_German_Triplex.hmp Greek_Plain.hmp Italic_Triplex.hmp Roman_Duplex.hmp \
               Script_Complex.hmp Gothic_Italian_Triplex.hmp Greek_Simplex.hmp Roman_Plain.hmp Script_Simplex.hmp
 
-HERSHEY_OUTPUTS=$(patsubst %.hmp, %.pt, $(HERSHEY_FILES))
+HERSHEY_OUTPUTS=$(patsubst %.hmp, %-Hershey.pt, $(HERSHEY_FILES))
 
 HERSHEY_HEADERS=$(patsubst %.hmp, hershey/%.h, $(HERSHEY_FILES))
 
@@ -103,8 +103,14 @@ Nurd.h: TekFastGraphicsFiles/File15.bin tekfast2c
 %-main.o: main.c %.h
 	@$(CC) -c -Os -m10 -msoft-float -nostartfiles  -nodefaultlibs  -nostdlib -o $@ $< -DPLOTFILE_H='"$(word 2, $^)"'	
 
+%-Herhsey-main.o: Hershey-main.c hershey/%.h
+	@$(CC) -c -Os -m10 -msoft-float -nostartfiles  -nodefaultlibs  -nostdlib -o $@ $< -DPLOTFILE_H='"$(word 2, $^)"'	
+
 
 %-plot.out: crt0.o  bresenham.o pdp-xy11.o %-main.o 
+	@pdp11-aout-ld   -T linker-script   -nostartfiles  -nodefaultlibs  -nostdlib  $^  -o $@
+
+%-Hershey.out: crt0.o  bresenham.o pdp-xy11.o %-Hershey-main.o 
 	@pdp11-aout-ld   -T linker-script   -nostartfiles  -nodefaultlibs  -nostdlib  $^  -o $@
 
 
@@ -113,6 +119,12 @@ Nurd.h: TekFastGraphicsFiles/File15.bin tekfast2c
 	@pdp11-aout-objcopy -j .text -O binary $^ $@
 
 %-plot.data: %-plot.out 
+	@pdp11-aout-objcopy -j .data -O binary $^ $@
+
+%-Hershey.text: %-Hershey.out 
+	@pdp11-aout-objcopy -j .text -O binary $^ $@
+
+%-Hershey.data: %-Hershey.out 
 	@pdp11-aout-objcopy -j .data -O binary $^ $@
 
 
@@ -139,14 +151,28 @@ Nurd.h: TekFastGraphicsFiles/File15.bin tekfast2c
 	@DATA=`pdp11-aout-objdump  -t $(word 2,$^) | cut -d ' ' -f 1,13 | cut -c 1-13 | grep data | cut -d ' ' -f 1`; \
 	bin2abs $< 0x$$DATA 1 > $@
 
+%-Hershey.textabs: %-Hershey.text %-Hershey.out
+	@CODE=`pdp11-aout-objdump  -t $(word 2,$^) | cut -d ' ' -f 1,13 | cut -c 1-13 | grep code | cut -d ' ' -f 1`; \
+	bin2abs $< 0x$$CODE 0 > $@
+
+%-Hershey.dataabs: %-Hershey.data %-Hershey.out
+	@DATA=`pdp11-aout-objdump  -t $(word 2,$^) | cut -d ' ' -f 1,13 | cut -c 1-13 | grep data | cut -d ' ' -f 1`; \
+	bin2abs $< 0x$$DATA 1 > $@
+
 
 %-plot.abs: %-plot.textabs %-plot.dataabs
+	    	@cat $^ > $@
+
+%-Hershey.abs: %-Hershey.textabs %-Hershey.dataabs
 	    	@cat $^ > $@
 
 
 %.pt:   space %.leader DEC-11-L2PC-PO.ptap %-plot.abs
 	@cat  $(foreach file,$(filter-out space, $^),$< $(file)) $< > $@
  
+
+%-Hershey.pt: space %.leader DEC-11-L2PC-PO.ptap %-Hershey.abs
+	@cat  $(foreach file,$(filter-out space, $^),$< $(file)) $< > $@
 
 #.PHONY: clean
 

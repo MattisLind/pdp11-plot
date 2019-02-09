@@ -16,71 +16,15 @@ void moveTo(int, int);
 void enablePlotterInterrupt();
 void disablePlotterInterrupt();
 void zero();
-/*
-int main() {
-  int i;
-  penDown();
-  for (i=0;i<300;i++) {
-    penRight();
-  }
-  for (i=0;i<300;i++) {
-    drumDown();
-  }
-  for (i=0;i<300;i++) {
-    penLeft();
-  }
-  for (i=0;i<300;i++) {
-    drumUp();
-  }
-  penUp();
-  for (i=0;i<100;i++) {
-    penRight();
-  }
-  penDown();
-  for (i=0;i<300;i++) {
-    drumDownPenRight();
-  }
-  for (i=0;i<200;i++) {
-    drumUpPenLeft();
-    drumUp();
-  }
-  for (i=0;i<100;i++) {
-    drumDownPenRight();
-    drumDown();
-    drumDown();
-    drumDownPenRight();
-    drumDown();
-  }
-  penUp();
-  return 0;
-}
-*/
 
-
-/*int main () 
-{
-  zero();
-  penDown();
-  moveTo(200,0);
-  moveTo(200,200);
-  moveTo(0,200);
-  moveTo(0,0);
-  penUp();
-  moveTo(300,300);
-  penDown();
-  moveTo(600,150);
-  moveTo(450,300);
-  moveTo(700,350);
-  moveTo(800,0);
-  penUp();
-  return 0;
-}
-
-*/
 
 #ifndef UNIX
+#define CONSOLE_RXCS 0177560
+#define CONSOLE_RXDB 0177562
 #define CONSOLE_TXCS 0177564
 #define CONSOLE_TXDB 0177566
+
+#define SWR 0177570
 
 void putch (void * p, char c) {
   while ( * ((volatile int *) (CONSOLE_TXCS)) != 0200) {
@@ -88,74 +32,66 @@ void putch (void * p, char c) {
   }
   *( (volatile int *) (CONSOLE_TXDB)) = c;
 }
+
+int getch () {
+  while ( * ((volatile int *) (CONSOLE_RXCS)) != 0200) {
+    //wait
+  }
+  return *( (volatile int *) (CONSOLE_TXDB));
+}
+
+void getline (char * buf, int maxlen) {
+  int ch, i=0;
+  do {
+    ch = getch();
+    if (ch == '\n') break;
+    if (ch == '\r') break;
+    buf[i]=ch;
+    i++;
+    putch(NULL, ch);
+    if (i==maxlen) break;
+  } while (1);
+  buf[i]=0;
+  printf("\r\n");
+}
+
+int readSWR () {
+  return *( (volatile int *) (SWR));
+}
+
 #endif
 
+int plotHersheyChar(char ch, int x, int y, int scale) {
+
+
+}
+
+plotHersheyLine(char * nuf, int x, int y, int scale) {
+  int i, last_x=x;
+  char ch;
+  while((ch=buf[i]) != 0) {
+    last_x = plotHersheyChar(ch, last_x, y, scale);
+  }
+}
+
+#define MAXLEN 60
+#define LINE_HEIGHT 16;
 
 int main () 
 {
-  int a,b,c,x,y,i=0,t,u,r,s;
+  char buf[MAXLEN+1];
+  int y;
   #ifndef UNIX
-  //init_printf((void *) 0, putch);
+  init_printf((void *) 0, putch);
   #endif
   zero();
   do {
-    a = plotdata[i] & 0x7f;
-    i++;
-    b = plotdata[i] & 0x7f;
-    i++;
-    c = plotdata[i] & 0x7f;
-    i++;
-    t = 0x38 & a;
-    u = 0x07 & a;
-    r = t << 4;
-    s = u << 7;
-    x = r | b;
-    y = s | c;
-    //    printf("A=%02X B=%02X C=%02X T=%02X U=%02X r=%03X s=%03X X=%03X X=%d Y=%03X Y=%d",a,b,c,t,r,s,u,x,x,y,y);
-    if (0x40 & a) {
-      penUp();
-      //printf (" UP\r\n");
-    } else {
-      penDown();
-      //printf (" DOWN\r\n");
-    }
-    moveTo(x,y);
-  } while(i<sizeof(plotdata));
-  penUp();
-  moveTo(0,0);
+    scale = readSWR();
+    printf("HERSHEY-PRINTER> ")
+    getline(buf,MAXLEN);
+    plotHersheyLine(buf,0, y, scale);
+    y+=(LINHEIGHT<<scale);
+  } while ();
   return 0;
 }
 
-/*
-int main ()
-{
-  disablePlotterInterrupt();
-  int t=0, lastt=0, sign=0,i;
-  penDown();
-  for (i=100;i>=0;i-=2) {
-    t += sign?-i:i; 
-    sign = ~sign;
-    moveTo(t, lastt);
-    lastt=t;
-    moveTo(t, lastt);
-  }
-  penUp();
-  return 0;
-}
-*/
-
- /*
-int main ()
-{
-  int i;
-  penDown();
-  zero();
-  for (i=0;i<600;i+=8) {
-    moveTo(i,200);
-    moveTo(i+4,200);
-    moveTo(0,0);
-  }
-  penUp();
-  return 0;
-}
- */

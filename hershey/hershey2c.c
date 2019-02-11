@@ -40,7 +40,7 @@ char * escapeString (char * in) {
 
 int main (int argc, char * argv[])
 {
-  int d, last_d=0, i,j=0;
+  int d, last_d=0, i,j=0, maxy=0, miny=0;
   FILE * hmpFile, * fontFile;
   int ch, state=STATE_ID, cnt=0, len, id;
   char id_str[6], len_str[4], buffer[500];
@@ -118,6 +118,15 @@ int main (int argc, char * argv[])
       break;
     case STATE_FONTDATA:
       buffer[cnt]=ch;
+      if ((cnt>2) && (cnt&1) && (map[id]>-1))  {
+	int y = ch - 'R';
+	if (y > maxy) {
+	  maxy = y;
+	}
+	if (y < miny) {
+	  miny = y;
+	}
+      }
       if (cnt < (len*2-1)) {
 	cnt++;
       }
@@ -143,5 +152,6 @@ int main (int argc, char * argv[])
     }
   }
   printf("};\n");
+  printf("#define MAXY %d\n#define MINY %d\n", maxy, miny);
   return 0;
 }

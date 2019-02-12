@@ -37,17 +37,36 @@ char * escapeString (char * in) {
   return buf;
 }
 
+int find (int fontnum, fc * fontarray) {
+  int i=0;
+  while (i < 96) {
+    if(fontarray[i].fontnum == fontnum) return i;
+    i++;
+  }
+  return -1;
+}
+
+
+void update(int fontnum, int len, fc * fontarray) {
+  int i=0;
+  while (i < 96) {
+    if(fontarray[i].fontnum == fontnum) fontarray[i].len = len;
+    i++;
+  }
+}
+
 
 int main (int argc, char * argv[])
 {
+
+
   int d, last_d=0, i,j=0, maxy=0, miny=0;
   FILE * hmpFile, * fontFile;
   int ch, state=STATE_ID, cnt=0, len, id;
   char id_str[6], len_str[4], buffer[500];
-  int map[3926];
   fc fontarray[96];
+  int asciinum;
 
-  memset(map,-1,sizeof (map));
 
   if (argc != 3) {
     fprintf(stderr, "Wrong number of arguments.\n");
@@ -69,20 +88,18 @@ int main (int argc, char * argv[])
       // range                                                                                                                                                                                   
       for (i=last_d + 1; i <= -d; i++) {
 	//        printf("Read %d\n", i);
-	map[i] = j;
 	fontarray[j].fontnum = i;
 	j++;
       }
     }
     else {
       //      printf("Read %d\n", d);
-      map[d] = j;
       fontarray[j].fontnum = d;
       j++;
     }
     last_d = d;
   }
-
+  i=0;
 
   while ((ch = fgetc(fontFile))!= EOF){
     if (ch=='\n') continue;
@@ -94,7 +111,7 @@ int main (int argc, char * argv[])
 	state=STATE_LEN;
 	cnt=0;
 	id = atoi(id_str);
-	if (map[id]>-1) {
+	if (find(id, fontarray)>-1) {
 	  printf("char fontchar_%d[]=\"", id);
 	}
       }
@@ -109,16 +126,14 @@ int main (int argc, char * argv[])
 	len_str[3]=0;
 	cnt = 0;
 	len = atoi(len_str);
-	if (map[id]>-1) {
-	  fontarray[map[id]].len = len;
-	}
+	update (id, len, fontarray);
       } else {
 	cnt++;
       }
       break;
     case STATE_FONTDATA:
       buffer[cnt]=ch;
-      if ((cnt>2) && (cnt&1) && (map[id]>-1))  {
+      if ((cnt>2) && (cnt&1) && (find(id, fontarray)>-1))  {
 	int y = ch - 'R';
 	if (y > maxy) {
 	  maxy = y;
@@ -134,13 +149,14 @@ int main (int argc, char * argv[])
 	buffer[len*2]=0;
 	state=0;
 	cnt=0;
-	if (map[id]>-1) {
+	if (find(id, fontarray)>-1) {
 	  printf("%s\";\n",escapeString(buffer));
 	}
       }
       break;
     }
   }
+
   printf("typedef struct fc { int len; char * fontchar; } fontchar;\nfontchar font[] = {");
   for (i=0; i<12; i++) {
     fprintf(stdout, "{%d, fontchar_%d}", fontarray[i*8].len, fontarray[i*8].fontnum); 

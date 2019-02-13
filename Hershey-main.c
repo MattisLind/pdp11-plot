@@ -26,7 +26,7 @@ void zero();
 
 #define SWR 0177570
 
-void putch (void * p, char c) {
+void putch (char c) {
   while ( * ((volatile int *) (CONSOLE_TXCS)) != 0200) {
     //wait
   }
@@ -59,10 +59,18 @@ int readSWR () {
   return *( (volatile int *) (SWR));
 }
 
+int puts (const char * str) {
+  char ch;
+  while ((ch=*str++)) {
+    putch(ch);
+  }
+}
+
+
 #endif
 
 int plotHersheyChar(char ch, int x, int y, int scale) {
-
+  font[ch-0x20]
 
 }
 
@@ -75,19 +83,16 @@ plotHersheyLine(char * nuf, int x, int y, int scale) {
 }
 
 #define MAXLEN 60
-#define LINE_HEIGHT 16;
+#define LINE_HEIGHT MAXY-MINY;
 
 int main () 
 {
   char buf[MAXLEN+1];
   int y;
-  #ifndef UNIX
-  init_printf((void *) 0, putch);
-  #endif
   zero();
   do {
-    scale = readSWR();
-    printf("HERSHEY-PRINTER> ")
+    scale = readSWR()&0x7;
+    puts("HERSHEY-PRINTER> ")
     getline(buf,MAXLEN);
     plotHersheyLine(buf,0, y, scale);
     y+=(LINHEIGHT<<scale);

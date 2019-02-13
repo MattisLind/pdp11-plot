@@ -70,8 +70,23 @@ int puts (const char * str) {
 #endif
 
 int plotHersheyChar(char ch, int x, int y, int scale) {
-  font[ch-0x20]
-
+  int len = font[ch-0x20].len<<1;
+  char * fontchar = font[ch-0x20].fontchar;
+  int left = (fontchar[0]-'R') << scale;
+  int right = (fontchar[1]-'R') << scale;
+  x = x - left; // left is negative
+  penUp();
+  for (int i=2; i<len; i+=2) {
+    int xrel = (fontchar[i] - 'R') << scale;
+    int yrel = (fontchar[i+1] - 'R') << scale;
+    if (fontchar[i]==' ' && fontchar[i+1]=='R') {
+      penUp();
+    } else {
+      moveTo(x+xrel, y+yrel);
+      penDown();
+    }
+  }
+  return x+right;
 }
 
 plotHersheyLine(char * nuf, int x, int y, int scale) {
@@ -83,7 +98,7 @@ plotHersheyLine(char * nuf, int x, int y, int scale) {
 }
 
 #define MAXLEN 60
-#define LINE_HEIGHT MAXY-MINY;
+#define LINE_HEIGHT ((MAXY)-(MINY))
 
 int main () 
 {

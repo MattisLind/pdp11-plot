@@ -7,7 +7,7 @@ HERSHEY_FILES=Cyrillic_Complex.hmp Greek_Complex.hmp Italic_Complex.hmp Roman_Co
 
 HERSHEY_OUTPUTS=$(patsubst %.hmp, %-Hershey.pt, $(HERSHEY_FILES))
 
-HERSHEY_HEADERS=$(patsubst %.hmp, hershey/%.h, $(HERSHEY_FILES))
+HERSHEY_HEADERS=$(patsubst %.hmp, %-Hershey.h, $(HERSHEY_FILES))
 
 ALL_ABS=$(patsubst %.pt,%-plot.abs,$(OUTPUTS))
 
@@ -110,10 +110,10 @@ Nurd.h: TekFastGraphicsFiles/File15.bin tekfast2c
 
 
 
-%-plot.out: crt0.o  bresenham.o pdp-xy11.o %-main.o 
+%-plot.out: crt0.o  bresenham.o pdp-xy11.o %-main.o #printf.o divmulmod.o ashlhi3.o xorhi3.o
 	@pdp11-aout-ld   -T linker-script   -nostartfiles  -nodefaultlibs  -nostdlib  $^  -o $@
 
-%-Hershey.out: crt0.o  bresenham.o pdp-xy11.o %-Hershey-main.o
+%-Hershey.out: crt0.o  bresenham.o pdp-xy11.o %-Hershey-main.o #printf.o divmulmod.o ashlhi3.o xorhi3.o
 	@pdp11-aout-ld   -T linker-script   -nostartfiles  -nodefaultlibs  -nostdlib  $^  -o $@
 
 %-plot.text: %-plot.out 

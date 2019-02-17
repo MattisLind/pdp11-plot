@@ -18,7 +18,29 @@ void disablePlotterInterrupt();
 void zero();
 
 
-#ifndef UNIX
+#ifdef UNIX
+#include <stdio.h>
+
+int puts (const char * str) {
+  printf("%s", str);
+  return 0;
+}
+
+void getlin (char * buf, int maxlen) {
+  fgets(buf, maxlen, stdin);
+}
+
+int readSWR () {
+  return 0;
+}
+
+
+
+
+#else
+
+#include "printf.h"
+
 #define CONSOLE_RXCS 0177560
 #define CONSOLE_RXDB 0177562
 #define CONSOLE_TXCS 0177564
@@ -37,7 +59,7 @@ int getch () {
   while ( * ((volatile int *) (CONSOLE_RXCS)) != 0200) {
     //wait
   }
-  return *( (volatile int *) (CONSOLE_TXDB));
+  return *( (volatile int *) (CONSOLE_RXDB));
 }
 
 int puts (const char * str) {
@@ -47,7 +69,7 @@ int puts (const char * str) {
   }
 }
 
-void getline (char * buf, int maxlen) {
+void getlin (char * buf, int maxlen) {
   int ch, i=0;
   do {
     ch = getch();
@@ -66,11 +88,16 @@ int readSWR () {
   return *( (volatile int *) (SWR));
 }
 
+void print_putch (void * dummy, char ch) {
+  putch(ch);
+}
 
+#define printf tfp_printf
 
 #endif
 
 int plotHersheyChar(char ch, int x, int y, int scale) {
+  if ((ch<32) || (ch>127)) return x;
   int len = font[ch-0x20].len<<1;
   char * fontchar = font[ch-0x20].fontchar;
   int left = (fontchar[0]-'R') << scale;
@@ -78,12 +105,13 @@ int plotHersheyChar(char ch, int x, int y, int scale) {
   x = x - left; // left is negative
   penUp();
   for (int i=2; i<len; i+=2) {
-    int xrel = (fontchar[i] - 'R') << scale;
-    int yrel = (fontchar[i+1] - 'R') << scale;
+    int xrel = (((int) (fontchar[i] - 'R')) << scale);
+    int yrel = (((int) (fontchar[i+1] - 'R')) << scale);
+    //printf("xrel=%d, yrel=%d\n", xrel, yrel);
     if (fontchar[i]==' ' && fontchar[i+1]=='R') {
       penUp();
     } else {
-      moveTo(x+xrel, y+yrel);
+      moveTo(x+xrel, y-yrel);
       penDown();
     }
   }
@@ -93,10 +121,13 @@ int plotHersheyChar(char ch, int x, int y, int scale) {
 void plotHersheyLine(char * buf, int x, int y, int scale) {
   int i, last_x=x;
   char ch;
-  while((ch=buf[i]) != 0) {
+  while((ch=buf[i++]) != 0) {
+    //printf("Now plotting %c, last_x=%d, y=%d, scale=%d\n",ch, last_x, y, scale); 
     last_x = plotHersheyChar(ch, last_x, y, scale);
+    //printf("last_x=%d\n", last_x);
     last_x += (1 << scale);
   }
+  penUp();
 }
 
 #define MAXLEN 60
@@ -105,12 +136,15 @@ void plotHersheyLine(char * buf, int x, int y, int scale) {
 int main () 
 {
   char buf[MAXLEN+1];
-  int y, scale;
+  int y=0, scale;
+  #ifndef UNIX
+  //init_printf((void *) 0, print_putch);
+  #endif
   zero();
   do {
-    scale = readSWR()&0x7;
     puts("HERSHEY-PRINTER> ");
-    getline(buf,MAXLEN);
+    getlin(buf,MAXLEN);
+    scale = readSWR()&0x7;
     plotHersheyLine(buf,0, y, scale);
     y-=(LINE_HEIGHT<<scale);
   } while (1);

@@ -81,11 +81,13 @@ void moveTo(int x,int y)
   #ifdef UNIX
   fprintf(stdout, "move to %d, %d current_x: %d current_y %d dx: %d dy %d sx: %d sy: %d err: %d e2: %d\n", x,y, current_x, current_y, dx, dy, sx, sy, err, e2);
   #else
-  //printf("Move to (%d,%d)\r\n",x,y);
+  //printf("move to %d, %d current_x: %d current_y %d dx: %d dy %d sx: %d sy: %d err: %d e2: %d\n", x,y, current_x, current_y, dx, dy, sx, sy, err, e2);
   #endif
   while(1) {
   #ifdef UNIX
     fprintf(stdout, "while current_x: %d current_y %d dx: %d dy %d sx: %d sy: %d err: %d e2: %d\n",current_x, current_y, dx, dy, sx, sy, err, e2);
+  #else
+    //printf("while current_x: %d current_y %d dx: %d dy %d sx: %d sy: %d err: %d e2: %d\n",current_x, current_y, dx, dy, sx, sy, err, e2);
   #endif
 
     if (current_x == x && current_y == y) {

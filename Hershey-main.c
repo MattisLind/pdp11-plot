@@ -40,6 +40,13 @@ int getch () {
   return *( (volatile int *) (CONSOLE_TXDB));
 }
 
+int puts (const char * str) {
+  char ch;
+  while ((ch=*str++)) {
+    putch(ch);
+  }
+}
+
 void getline (char * buf, int maxlen) {
   int ch, i=0;
   do {
@@ -48,23 +55,17 @@ void getline (char * buf, int maxlen) {
     if (ch == '\r') break;
     buf[i]=ch;
     i++;
-    putch(NULL, ch);
+    putch(ch);
     if (i==maxlen) break;
   } while (1);
   buf[i]=0;
-  printf("\r\n");
+  puts("\r\n");
 }
 
 int readSWR () {
   return *( (volatile int *) (SWR));
 }
 
-int puts (const char * str) {
-  char ch;
-  while ((ch=*str++)) {
-    putch(ch);
-  }
-}
 
 
 #endif
@@ -89,7 +90,7 @@ int plotHersheyChar(char ch, int x, int y, int scale) {
   return x+right;
 }
 
-plotHersheyLine(char * nuf, int x, int y, int scale) {
+void plotHersheyLine(char * buf, int x, int y, int scale) {
   int i, last_x=x;
   char ch;
   while((ch=buf[i]) != 0) {
@@ -103,15 +104,15 @@ plotHersheyLine(char * nuf, int x, int y, int scale) {
 int main () 
 {
   char buf[MAXLEN+1];
-  int y;
+  int y, scale;
   zero();
   do {
     scale = readSWR()&0x7;
-    puts("HERSHEY-PRINTER> ")
+    puts("HERSHEY-PRINTER> ");
     getline(buf,MAXLEN);
     plotHersheyLine(buf,0, y, scale);
-    y+=(LINHEIGHT<<scale);
-  } while ();
+    y-=(LINE_HEIGHT<<scale);
+  } while (1);
   return 0;
 }
 

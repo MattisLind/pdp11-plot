@@ -11,6 +11,8 @@ HERSHEY_HEADERS=$(patsubst %.hmp, hershey/%.h, $(HERSHEY_FILES))
 
 ALL_ABS=$(patsubst %.pt,%-plot.abs,$(OUTPUTS))
 
+ALL_HERSHEY_ABS=$(patsubst %-Hershey.pt,%-Hershey.abs,$(HERSHEY_OUTPUTS))
+
 ALL_MAIN_DATA=$(patsubst %.pt,%-main.data.bin,$(OUTPUTS))
 
 ALL_PLOT_DATA=$(patsubst %.pt,%-plot.data.bin,$(OUTPUTS))
@@ -21,7 +23,7 @@ ALL_PLOT_DATA_HEX=$(patsubst %.pt,%-plot.data.hex,$(OUTPUTS))
 
 ALL_PLOT_DATA_DIFF=$(patsubst %.pt,%-data.diff,$(OUTPUTS))
 
-all: $(OUTPUTS)
+all: $(OUTPUTS) $(HERSHEY_OUTPUTS)
 
 datasection: $(ALL_MAIN_DATA)  $(ALL_PLOT_DATA)
 
@@ -41,10 +43,10 @@ hershey/hershey2c: hershey/hershey2c.c
 		   @cc -o $@ $<
 
 
-hershey/%.h: hershey/%.hmp hershey/hershey2c hershey/hershey	     
+%-Hershey.h: hershey/%.hmp hershey/hershey2c hershey/hershey	     
 	     @hershey/hershey2c $< hershey/hershey > $@
 
-abs: $(ALL_ABS)
+abs: $(ALL_ABS) $(ALL_HERSHEY_ABS)
 
 CC=pdp11-aout-gcc
 AS=pdp11-aout-as
@@ -99,12 +101,13 @@ Nurd.h: TekFastGraphicsFiles/File15.bin tekfast2c
 	@rm -f tmp 
 
 
+%-Hershey-main.o: Hershey-main.c %-Hershey.h
+	@$(CC) -c -Os -m10 -msoft-float -nostartfiles  -nodefaultlibs  -nostdlib -o $@ $< -DPLOTFILE_H='"$(word 2, $^)"'	
+
 
 %-main.o: main.c %.h
 	@$(CC) -c -Os -m10 -msoft-float -nostartfiles  -nodefaultlibs  -nostdlib -o $@ $< -DPLOTFILE_H='"$(word 2, $^)"'	
 
-%-Herhsey-main.o: Hershey-main.c hershey/%.h
-	@$(CC) -c -Os -m10 -msoft-float -nostartfiles  -nodefaultlibs  -nostdlib -o $@ $< -DPLOTFILE_H='"$(word 2, $^)"'	
 
 
 %-plot.out: crt0.o  bresenham.o pdp-xy11.o %-main.o 
@@ -181,3 +184,7 @@ clean:
 	@rm -f $(ALL_ABS)
 	@rm -f $(ALL_MAIN_DATA)  $(ALL_PLOT_DATA)
 	@rm -f $(ALL_MAIN_DATA_HEX) $(ALL_PLOT_DATA_HEX) $(ALL_PLOT_DATA_DIFF)
+	@rm -f hershey/hershey2c
+	@rm -f $(ALL_HERSHEY_ABS)
+	@rm -f *-main.o	
+	@rm -f *-Hershey.out

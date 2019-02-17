@@ -95,6 +95,7 @@ void plotHersheyLine(char * buf, int x, int y, int scale) {
   char ch;
   while((ch=buf[i]) != 0) {
     last_x = plotHersheyChar(ch, last_x, y, scale);
+    last_x += (1 << scale);
   }
 }
 

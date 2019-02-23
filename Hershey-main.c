@@ -59,7 +59,7 @@ int getch () {
   while ( * ((volatile int *) (CONSOLE_RXCS)) != 0200) {
     //wait
   }
-  return *( (volatile int *) (CONSOLE_RXDB));
+  return (*( (volatile int *) (CONSOLE_RXDB))) & 0x7f;
 }
 
 int puts (const char * str) {

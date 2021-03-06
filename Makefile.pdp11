@@ -37,7 +37,7 @@ GEN_TEK_HDR=TekBug.h R2D2.h DarthVader.h  DeathStar.h LaserGun.h Grinch.h Cheshi
 
 makeheaders: $(GEN_TEK_HDR)
 
-makehersheyheaders: $(HERSHEY_HEADERS)
+#makehersheyheaders: $(HERSHEY_HEADERS)
 
 hershey/hershey2c: hershey/hershey2c.c
 		   @cc -o $@ $<
@@ -186,5 +186,7 @@ clean:
 	@rm -f $(ALL_MAIN_DATA_HEX) $(ALL_PLOT_DATA_HEX) $(ALL_PLOT_DATA_DIFF)
 	@rm -f hershey/hershey2c
 	@rm -f $(ALL_HERSHEY_ABS)
+	@rm -f $(ALL_ABS)
 	@rm -f *-main.o	
 	@rm -f *-Hershey.out
+	@rm -f $(HERSHEY_HEADERS)

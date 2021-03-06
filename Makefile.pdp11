@@ -110,10 +110,10 @@ Nurd.h: TekFastGraphicsFiles/File15.bin tekfast2c
 
 
 
-%-plot.out: crt0.o  bresenham.o pdp-xy11.o %-main.o #printf.o divmulmod.o ashlhi3.o xorhi3.o
+%-plot.out: crt0.o  bresenham.o pdp-xy11.o %-main.o printf.o divmulmod.o ashlhi3.o xorhi3.o
 	@pdp11-aout-ld   -T linker-script   -nostartfiles  -nodefaultlibs  -nostdlib  $^  -o $@
 
-%-Hershey.out: crt0.o  bresenham.o pdp-xy11.o %-Hershey-main.o #printf.o divmulmod.o ashlhi3.o xorhi3.o
+%-Hershey.out: crt0.o  bresenham.o pdp-xy11.o %-Hershey-main.o printf.o divmulmod.o ashlhi3.o xorhi3.o
 	@pdp11-aout-ld   -T linker-script   -nostartfiles  -nodefaultlibs  -nostdlib  $^  -o $@
 
 %-plot.text: %-plot.out 
@@ -146,19 +146,19 @@ Nurd.h: TekFastGraphicsFiles/File15.bin tekfast2c
 
 %-plot.textabs: %-plot.text %-plot.out
 	@CODE=`pdp11-aout-objdump  -t $(word 2,$^) | cut -d ' ' -f 1,13 | cut -c 1-13 | grep code | cut -d ' ' -f 1`; \
-	bin2abs $< 0x$$CODE 0 > $@
+	bin2abs $< 0x$$CODE > $@
 
 %-plot.dataabs: %-plot.data %-plot.out
 	@DATA=`pdp11-aout-objdump  -t $(word 2,$^) | cut -d ' ' -f 1,13 | cut -c 1-13 | grep data | cut -d ' ' -f 1`; \
-	bin2abs $< 0x$$DATA 1 > $@
+	bin2abs $< 0x$$DATA > $@
 
 %-Hershey.textabs: %-Hershey.text %-Hershey.out
 	@CODE=`pdp11-aout-objdump  -t $(word 2,$^) | cut -d ' ' -f 1,13 | cut -c 1-13 | grep code | cut -d ' ' -f 1`; \
-	bin2abs $< 0x$$CODE 0 > $@
+	bin2abs $< 0x$$CODE > $@
 
 %-Hershey.dataabs: %-Hershey.data %-Hershey.out
 	@DATA=`pdp11-aout-objdump  -t $(word 2,$^) | cut -d ' ' -f 1,13 | cut -c 1-13 | grep data | cut -d ' ' -f 1`; \
-	bin2abs $< 0x$$DATA 1 > $@
+	bin2abs $< 0x$$DATA > $@
 
 
 %-plot.abs: %-plot.textabs %-plot.dataabs

@@ -145,7 +145,13 @@ int main ()
     puts("HERSHEY-PRINTER> ");
     getlin(buf,MAXLEN);
     scale = readSWR()&0x7;
+    #ifdef VECTOR
+    do {
+    #endif  
     plotHersheyLine(buf,0, y, scale);
+    #ifdef VECTOR
+    } while ((readSWR() & 0x8000) == 0);
+    #endif
     y-=(LINE_HEIGHT<<scale);
   } while (1);
   return 0;

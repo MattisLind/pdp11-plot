@@ -97,6 +97,9 @@ int main ()
   #ifndef UNIX
   //init_printf((void *) 0, putch);
   #endif
+  #ifdef VECTOR
+  do {
+  #endif
   zero();
   do {
     a = plotdata[i] & 0x7f;
@@ -123,6 +126,9 @@ int main ()
   } while(i<sizeof(plotdata));
   penUp();
   moveTo(0,0);
+  #ifdef VECTOR
+  } while(1);
+  #endif
   return 0;
 }
 

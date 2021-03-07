@@ -120,18 +120,25 @@ Nurd.h: TekFastGraphicsFiles/File15.bin tekfast2c
 %-main.o: main.c %.h
 	@$(CC) -c -Os -m10 -msoft-float -nostartfiles  -nodefaultlibs  -nostdlib -o $@ $< -DPLOTFILE_H='"$(word 2, $^)"'	
 
+%-vector-Hershey-main.o: Hershey-main.c %-Hershey.h
+	@$(CC) -c -Os -m10 -msoft-float -nostartfiles  -nodefaultlibs  -nostdlib -o $@ $< -DPLOTFILE_H='"$(word 2, $^)"' -DVECTOR
+
+
+%-vector-main.o: main.c %.h
+	@$(CC) -c -Os -m10 -msoft-float -nostartfiles  -nodefaultlibs  -nostdlib -o $@ $< -DPLOTFILE_H='"$(word 2, $^)"' -DVECTOR	
+
 
 
 %-plot.out: crt0.o  bresenham.o pdp-xy11.o %-main.o printf.o divmulmod.o ashlhi3.o xorhi3.o
 	@pdp11-aout-ld   -T linker-script   -nostartfiles  -nodefaultlibs  -nostdlib  $^  -o $@
 
-%-vector-plot.out: crt0.o  bresenham.o pdp-xy11.o %-main.o printf.o divmulmod.o ashlhi3.o xorhi3.o
+%-vector-plot.out: crt0.o  vector.o %-vector-main.o printf.o divmulmod.o ashlhi3.o xorhi3.o
 	@pdp11-aout-ld   -T linker-script   -nostartfiles  -nodefaultlibs  -nostdlib  $^  -o $@
 
 %-Hershey.out: crt0.o  bresenham.o pdp-xy11.o %-Hershey-main.o printf.o divmulmod.o ashlhi3.o xorhi3.o
 	@pdp11-aout-ld   -T linker-script   -nostartfiles  -nodefaultlibs  -nostdlib  $^  -o $@
 
-%-vector-Hershey.out: crt0.o  bresenham.o pdp-xy11.o %-Hershey-main.o printf.o divmulmod.o ashlhi3.o xorhi3.o
+%-vector-Hershey.out: crt0.o  vector.o %-vector-Hershey-main.o printf.o divmulmod.o ashlhi3.o xorhi3.o
 	@pdp11-aout-ld   -T linker-script   -nostartfiles  -nodefaultlibs  -nostdlib  $^  -o $@
 
 %.text: %.out 

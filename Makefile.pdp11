@@ -7,11 +7,19 @@ HERSHEY_FILES=Cyrillic_Complex.hmp Greek_Complex.hmp Italic_Complex.hmp Roman_Co
 
 HERSHEY_OUTPUTS=$(patsubst %.hmp, %-Hershey.pt, $(HERSHEY_FILES))
 
+VECTOR_PLOT_OUTPUTS=$(patsubst %.pt, %-vector-plot.pt, $(OUTPUTS))
+
+VECTOR_HERSHEY_OUTPUTS=$(patsubst %.hmp, %-vector-Hershey.pt, $(HERSHEY_FILES))
+
 HERSHEY_HEADERS=$(patsubst %.hmp, %-Hershey.h, $(HERSHEY_FILES))
 
 ALL_ABS=$(patsubst %.pt,%-plot.abs,$(OUTPUTS))
 
 ALL_HERSHEY_ABS=$(patsubst %-Hershey.pt,%-Hershey.abs,$(HERSHEY_OUTPUTS))
+
+ALL_VECTOR_ABS=$(patsubst %.pt,%.abs,$(VECTOR_PLOT_OUTPUTS))
+
+ALL_VECTOR_HERSHEY_ABS=$(patsubst %.pt,%.abs,$(VECTOR_HERSHEY_OUTPUTS))
 
 ALL_MAIN_DATA=$(patsubst %.pt,%-main.data.bin,$(OUTPUTS))
 
@@ -23,7 +31,7 @@ ALL_PLOT_DATA_HEX=$(patsubst %.pt,%-plot.data.hex,$(OUTPUTS))
 
 ALL_PLOT_DATA_DIFF=$(patsubst %.pt,%-data.diff,$(OUTPUTS))
 
-all: $(OUTPUTS) $(HERSHEY_OUTPUTS) md5sums
+all: $(OUTPUTS) $(HERSHEY_OUTPUTS) $(VECTOR_HERSHEY_OUTPUTS) $(VECTOR_PLOT_OUTPUTS) md5sums
 
 md5sums:
 	md5sum $(OUTPUTS) $(HERSHEY_OUTPUTS) > papertapes.md5sum
@@ -50,7 +58,7 @@ hershey/hershey2c: hershey/hershey2c.c
 %-Hershey.h: hershey/%.hmp hershey/hershey2c hershey/hershey	     
 	     @hershey/hershey2c $< hershey/hershey > $@
 
-abs: $(ALL_ABS) $(ALL_HERSHEY_ABS)
+abs: $(ALL_ABS) $(ALL_HERSHEY_ABS) $(ALL_VECTOR_ABS) $(ALL_VECTOR_HERSHEY_ABS)
 
 CC=pdp11-aout-gcc
 AS=pdp11-aout-as
@@ -117,21 +125,20 @@ Nurd.h: TekFastGraphicsFiles/File15.bin tekfast2c
 %-plot.out: crt0.o  bresenham.o pdp-xy11.o %-main.o printf.o divmulmod.o ashlhi3.o xorhi3.o
 	@pdp11-aout-ld   -T linker-script   -nostartfiles  -nodefaultlibs  -nostdlib  $^  -o $@
 
+%-vector-plot.out: crt0.o  bresenham.o pdp-xy11.o %-main.o printf.o divmulmod.o ashlhi3.o xorhi3.o
+	@pdp11-aout-ld   -T linker-script   -nostartfiles  -nodefaultlibs  -nostdlib  $^  -o $@
+
 %-Hershey.out: crt0.o  bresenham.o pdp-xy11.o %-Hershey-main.o printf.o divmulmod.o ashlhi3.o xorhi3.o
 	@pdp11-aout-ld   -T linker-script   -nostartfiles  -nodefaultlibs  -nostdlib  $^  -o $@
 
-%-plot.text: %-plot.out 
+%-vector-Hershey.out: crt0.o  bresenham.o pdp-xy11.o %-Hershey-main.o printf.o divmulmod.o ashlhi3.o xorhi3.o
+	@pdp11-aout-ld   -T linker-script   -nostartfiles  -nodefaultlibs  -nostdlib  $^  -o $@
+
+%.text: %.out 
 	@pdp11-aout-objcopy -j .text -O binary $^ $@
 
-%-plot.data: %-plot.out 
+%.data: %.out 
 	@pdp11-aout-objcopy -j .data -O binary $^ $@
-
-%-Hershey.text: %-Hershey.out 
-	@pdp11-aout-objcopy -j .text -O binary $^ $@
-
-%-Hershey.data: %-Hershey.out 
-	@pdp11-aout-objcopy -j .data -O binary $^ $@
-
 
 %-plot.data.bin: %-plot.out
 		 pdp11-aout-objcopy -j .data -O binary $^ $@
@@ -139,40 +146,27 @@ Nurd.h: TekFastGraphicsFiles/File15.bin tekfast2c
 %-main.data.bin: %-main.o
 		 pdp11-aout-objcopy -j .data -O binary $^ $@
 
-%-plot.data.hex: %-plot.data.bin
-		 hexdump $^ > $@
-
-%-main.data.hex: %-main.data.bin
+%.data.hex: %.data.bin
 		 hexdump $^ > $@
 
 %-data.diff: %-plot.data.hex %-main.data.hex
 	     diff $^ > $@
 
-%-plot.textabs: %-plot.text %-plot.out
+%.textabs: %.text %.out
 	@CODE=`pdp11-aout-objdump  -t $(word 2,$^) | cut -d ' ' -f 1,13 | cut -c 1-13 | grep code | cut -d ' ' -f 1`; \
 	bin2abs $< 0x$$CODE > $@
 
-%-plot.dataabs: %-plot.data %-plot.out
+%.dataabs: %.data %.out
 	@DATA=`pdp11-aout-objdump  -t $(word 2,$^) | cut -d ' ' -f 1,13 | cut -c 1-13 | grep data | cut -d ' ' -f 1`; \
 	bin2abs $< 0x$$DATA > $@
 
-%-Hershey.textabs: %-Hershey.text %-Hershey.out
-	@CODE=`pdp11-aout-objdump  -t $(word 2,$^) | cut -d ' ' -f 1,13 | cut -c 1-13 | grep code | cut -d ' ' -f 1`; \
-	bin2abs $< 0x$$CODE > $@
-
-%-Hershey.dataabs: %-Hershey.data %-Hershey.out
-	@DATA=`pdp11-aout-objdump  -t $(word 2,$^) | cut -d ' ' -f 1,13 | cut -c 1-13 | grep data | cut -d ' ' -f 1`; \
-	bin2abs $< 0x$$DATA > $@
-
-
-%-plot.abs: %-plot.textabs %-plot.dataabs
+%.abs: %.textabs %.dataabs
 	    	@cat $^ > $@
-
-%-Hershey.abs: %-Hershey.textabs %-Hershey.dataabs
-	    	@cat $^ > $@
-
 
 %.pt:   space %.leader DEC-11-L2PC-PO.ptap %-plot.abs
+	@cat  $(foreach file,$(filter-out space, $^),$< $(file)) $< > $@
+ 
+%-vector-plot.pt:   space %.leader DEC-11-L2PC-PO.ptap %-vector-plot.abs
 	@cat  $(foreach file,$(filter-out space, $^),$< $(file)) $< > $@
  
 

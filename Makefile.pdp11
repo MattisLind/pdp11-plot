@@ -23,7 +23,11 @@ ALL_PLOT_DATA_HEX=$(patsubst %.pt,%-plot.data.hex,$(OUTPUTS))
 
 ALL_PLOT_DATA_DIFF=$(patsubst %.pt,%-data.diff,$(OUTPUTS))
 
-all: $(OUTPUTS) $(HERSHEY_OUTPUTS)
+all: $(OUTPUTS) $(HERSHEY_OUTPUTS) md5sums
+
+md5sums:
+	md5sum $(OUTPUTS) $(HERSHEY_OUTPUTS) > papertapes.md5sum
+	md5sum papertapes.md5sum
 
 datasection: $(ALL_MAIN_DATA)  $(ALL_PLOT_DATA)
 

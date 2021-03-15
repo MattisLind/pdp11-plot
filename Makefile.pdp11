@@ -68,9 +68,14 @@ space:
 	@dd if=/dev/zero of=$@ bs=1 count=20
 
 
+vectorBresenham.o:bresenham.c
+	@$(CC) -c -Os -m10 -msoft-float -nostartfiles  -nodefaultlibs  -nostdlib -DVECTOR -o $@ $^
+
+plotBresenham.o:bresenham.c
+	@$(CC) -c -Os -m10 -msoft-float -nostartfiles  -nodefaultlibs  -nostdlib  -o $@ $^
+
 %.o:%.c
 	@$(CC) -c -Os -m10 -msoft-float -nostartfiles  -nodefaultlibs  -nostdlib -o $@ $^
-
 
 %.o:%.s
 	@$(AS) -o $@ $^
@@ -129,16 +134,16 @@ Nurd.h: TekFastGraphicsFiles/File15.bin tekfast2c
 
 
 
-%-plot.out: crt0.o  bresenham.o pdp-xy11.o %-main.o printf.o divmulmod.o ashlhi3.o xorhi3.o
+%-plot.out: crt0.o  plotBresenham.o pdp-xy11.o %-main.o  ashlhi3.o
 	@pdp11-aout-ld   -T linker-script   -nostartfiles  -nodefaultlibs  -nostdlib  $^  -o $@
 
-%-vector-plot.out: crt0.o  vector.o %-vector-main.o printf.o divmulmod.o ashlhi3.o xorhi3.o
+%-vector-plot.out: crt0.o  vectorBresenham.o vector.o %-vector-main.o ashlhi3.o
 	@pdp11-aout-ld   -T linker-script   -nostartfiles  -nodefaultlibs  -nostdlib  $^  -o $@
 
-%-Hershey.out: crt0.o  bresenham.o pdp-xy11.o %-Hershey-main.o printf.o divmulmod.o ashlhi3.o xorhi3.o
+%-Hershey.out: crt0.o  plotBresenham.o pdp-xy11.o %-Hershey-main.o printf.o divmulmod.o ashlhi3.o xorhi3.o
 	@pdp11-aout-ld   -T linker-script   -nostartfiles  -nodefaultlibs  -nostdlib  $^  -o $@
 
-%-vector-Hershey.out: crt0.o  vector.o %-vector-Hershey-main.o printf.o divmulmod.o ashlhi3.o xorhi3.o
+%-vector-Hershey.out: crt0.o  vectorBresenham.o vector.o %-vector-Hershey-main.o printf.o divmulmod.o ashlhi3.o xorhi3.o 
 	@pdp11-aout-ld   -T linker-script   -nostartfiles  -nodefaultlibs  -nostdlib  $^  -o $@
 
 %.text: %.out 

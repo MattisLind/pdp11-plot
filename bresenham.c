@@ -4,6 +4,11 @@
 #include "printf.h"
 #endif
 
+#ifdef VECTOR
+#include "vector.h"
+#define plotCommand(x)
+#endif
+
 #define DRUMDOWN 1<<0
 #define DRUMUP   1<<1
 #define PENLEFT  1<<2
@@ -44,12 +49,20 @@ void drumUp()
 
 void penDown ()
 {
+  #ifdef VECTOR
+  vectorDown();
+  #else
   plotCommand(PENDOWN);
+  #endif
 }
 
 void penUp ()
 {
+  #ifdef VECTOR
+  vectorUp();
+  #else
   plotCommand(PENUP);
+  #endif
 }
 
 void drumUpPenLeft () 
@@ -98,14 +111,24 @@ void moveTo(int x,int y)
     if (e2>=-dx) {
       err -=dy;
       current_x += sx;
+      #ifdef VECTOR
+      vectorX(current_x);
+      #else
       command |= (sx==1)?PENRIGHT:PENLEFT;
+      #endif
     }
     if (e2<dy) {
       err += dx;
       current_y += sy;
+      #ifdef VECTOR
+      vectorY(current_y);
+      #else
       command |= (sy==1)?DRUMDOWN:DRUMUP;
+      #endif
     }
+    #ifndef VECTOR
     plotCommand(command);
+    #endif
   }
 } 
 

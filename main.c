@@ -93,7 +93,7 @@ void putch (void * p, char c) {
 
 int main () 
 {
-  int a,b,c,x,y,i=0,t,u,r,s;
+  int a,b,c,x,y,i,t,u,r,s;
   #ifndef UNIX
   //init_printf((void *) 0, putch);
   #endif
@@ -101,6 +101,7 @@ int main ()
   do {
   #endif
   zero();
+  i=0;
   do {
     a = plotdata[i] & 0x7f;
     i++;
